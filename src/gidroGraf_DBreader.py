@@ -1,6 +1,5 @@
 import ctypes
-import sys
-import time
+import numpy as np
 from ctypes import *
 import os.path
 
@@ -46,4 +45,4 @@ class Hyscan5wrapper():
             buffer_output = (c_float * num_values)() #резервируем место в памяти
             num_values = self.RA.get_values(track_id, i, byref(buffer_output), num_values) #читаем строки из БД
             lines.append(buffer_output)
-        return lines
+        return np.asarray(lines)

@@ -18,6 +18,7 @@ if __name__ == "__main__":
     # source_type = 101 - для Port
     # source_type = 102 - для Starboard
 
+    # Задаем исходные данные
     c = 1420 #скорость звука
     v = 1    #скорость гидролокатора
     path2hyscanbin = '/media/alf/Storage/hyscan-builder-linux/bin'
@@ -30,17 +31,32 @@ if __name__ == "__main__":
     except Exception as err:
         raise err
 
+    # Созадем экземпляр класса gidroGraf_DBreader
     DB = gg.Hyscan5wrapper(path2hyscanbin, 'file://' + path2hyscanprj, project_name)
+
+    # Читаем информацию о галсе [id, начаьный индекс строк, конечный индекс строк]
     track_port      = DB.get_track_id(track_name, 101)
     track_starboard = DB.get_track_id(track_name, 102)
 
+    # Считываем строки из БД
     count_lines2read = 100
-    data_port       = np.asarray(DB.read_lines(track_port[0], track_port[1], count_lines2read))
-    data_starboard  = np.asarray(DB.read_lines(track_starboard[0], track_starboard[1], count_lines2read))
+    data_port       = DB.read_lines(track_port[0], track_port[1], count_lines2read)
+    data_starboard  = DB.read_lines(track_starboard[0], track_starboard[1], count_lines2read)
 
-    plt.imshow(data_port, interpolation='bicubic')
-    plt.imshow(data_starboard, interpolation='bicubic')
-    plt.show()
+    # Сжатие динамического диапазона
+    converted = cv2.convertScaleAbs(src=data_port, alpha=2000, beta=0)
+
+    # Адаптивное выравнивание яркости и контраста
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+    processed = clahe.apply(converted)
+
+    # Отображение картинок
+    cv2.imshow('PORT', processed)
+    cv2.imshow('STARBOARD', data_starboard)
+
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
 
     # # Вычисляем параметры масштабирования
     # m_lines_orig = img0.shape[0]
