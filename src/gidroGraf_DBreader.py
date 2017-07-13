@@ -4,14 +4,16 @@ from ctypes import *
 import os.path
 
 class Hyscan5wrapper():
-    def __init__(self, path2Hyscan5bin, DB_name, Project_name):
+    def __init__(self, path2Hyscan5bin, path2hyscanprj, Project_name):
         """ КОНСТРУКТОР """
+        # path2Hyscan5bin = '/media/alf/Storage/hyscan-builder-linux/bin'
+        # path2hyscanprj  = '/media/alf/Storage/Hyscan5_projects'
         # DB_name = 'file://D:/Hyscan5_projects'
         # project_name = 'line'
-        # track =  'Track01'
         self.path2Hyscan5bin = path2Hyscan5bin
-        self.DB_name = DB_name.encode('ascii', 'replace')
-        self.Project_name = Project_name.encode('ascii', 'replace')
+        self.path2hyscanprj  = path2hyscanprj
+        self.DB_name = ('file://' + path2hyscanprj).encode('ascii', 'replace')
+        self.Project_name = Project_name
         os.chdir(self.path2Hyscan5bin)
 
         # Загружаем DLL для чтения БД ГидроГраф
@@ -31,9 +33,13 @@ class Hyscan5wrapper():
             raise err
 
     def get_track_id(self, track_name, source_type):
+        # track_name =  'Track01'
+        # source_type = 101 - для Port
+        # source_type = 102 - для Starboard
         is_raw = True
         trk = track_name.encode('ascii', 'replace')
-        id = self.RA.acoustic_data_new(self.Project_name, trk, source_type, is_raw)
+        prj = self.Project_name.encode('ascii', 'replace')
+        id = self.RA.acoustic_data_new(prj, trk, source_type, is_raw)
         idx_first = self.RA.get_first_index_in_range(id)
         idx_last = self.RA.get_last_index_in_range(id)
         return id, idx_first, idx_last
@@ -46,3 +52,14 @@ class Hyscan5wrapper():
             num_values = self.RA.get_values(track_id, i, byref(buffer_output), num_values) #читаем строки из БД
             lines.append(buffer_output)
         return np.asarray(lines)
+
+    def read_datarate(self, track_name):
+        # filename = path2hyscanprj + '/' + project_name + '/' + track_name + '/' + 'track.prm'
+        filename = os.path.join(self.path2hyscanprj, self.Project_name, track_name, 'track.prm')
+        filestring = open(filename, 'r').read()
+        idx_beg = filestring.find('/data/rate=') + 11
+        idx_end = filestring[idx_beg:idx_beg + 7].find('\n') + idx_beg
+        if idx_beg == -1:
+            raise Exception('Невозможно прочитать проект, не найдена частота дискретизации')
+        a = int(filestring[idx_beg:idx_end])
+        return a

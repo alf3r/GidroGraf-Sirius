@@ -1,23 +1,9 @@
 import gidroGraf_DBreader as gg
-import numpy as np
 import cv2
-from matplotlib import pyplot as plt
-
-
-def read_datarate(filename):
-    filestring = open(filename, 'r').read()
-    idx_beg = filestring.find('/data/rate=') + 11
-    idx_end = filestring[idx_beg:idx_beg+7].find('\n') + idx_beg
-    if idx_beg == -1:
-        raise Exception('Невозможно прочитать проект, не найдена частота дискретизации')
-    a = int(filestring[idx_beg:idx_end])
-    return a
+import Bright
 
 
 if __name__ == "__main__":
-    # source_type = 101 - для Port
-    # source_type = 102 - для Starboard
-
     # Задаем исходные данные
     c = 1420 #скорость звука
     v = 1    #скорость гидролокатора
@@ -25,14 +11,13 @@ if __name__ == "__main__":
     path2hyscanprj = '/media/alf/Storage/Hyscan5_projects'
     project_name   = 'line'
     track_name     = 'Track01'
-    file4params    = path2hyscanprj + '/' + project_name + '/' + track_name + '/' + 'track.prm'
-    try:
-        datarate   = read_datarate(file4params)
-    except Exception as err:
-        raise err
 
     # Созадем экземпляр класса gidroGraf_DBreader
-    DB = gg.Hyscan5wrapper(path2hyscanbin, 'file://' + path2hyscanprj, project_name)
+    DB = gg.Hyscan5wrapper(path2hyscanbin, path2hyscanprj, project_name)
+    try:
+        datarate   = DB.read_datarate(track_name)
+    except Exception as err:
+        raise err
 
     # Читаем информацию о галсе [id, начаьный индекс строк, конечный индекс строк]
     track_port      = DB.get_track_id(track_name, 101)
@@ -43,20 +28,22 @@ if __name__ == "__main__":
     data_port       = DB.read_lines(track_port[0], track_port[1], count_lines2read)
     data_starboard  = DB.read_lines(track_starboard[0], track_starboard[1], count_lines2read)
 
-    # Сжатие динамического диапазона
-    converted = cv2.convertScaleAbs(src=data_port, alpha=2000, beta=0)
+    data_port       = Bright.convert_range(data_port)
+    data_starboard  = Bright.convert_range(data_starboard)
 
-    # Адаптивное выравнивание яркости и контраста
-    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-    processed = clahe.apply(converted)
+    # # Сжатие динамического диапазона
+    # converted = cv2.convertScaleAbs(src=data_port, alpha=2000, beta=0)
+    #
+    # # Адаптивное выравнивание яркости и контраста
+    # clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+    # processed = clahe.apply(converted)
 
     # Отображение картинок
-    cv2.imshow('PORT', processed)
+    cv2.imshow('PORT', data_port)
     cv2.imshow('STARBOARD', data_starboard)
 
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-
 
     # # Вычисляем параметры масштабирования
     # m_lines_orig = img0.shape[0]
