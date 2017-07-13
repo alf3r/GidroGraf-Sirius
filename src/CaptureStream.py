@@ -3,46 +3,49 @@ import numpy as np
 import gidroGraf_DBreader as gg
 import sqlite3
 from matplotlib import pyplot as plt
+import Capture
+
+def read_datarate(filename):
+    filestring = open(filename, 'r').read()
+    idx_beg = filestring.find('/data/rate=') + 11
+    idx_end = filestring[idx_beg:idx_beg+7].find('\n') + idx_beg
+    if idx_beg == -1:
+        raise Exception('Невозможно прочитать проект, не найдена частота дискретизации')
+    a = int(filestring[idx_beg:idx_end])
+    return a
+
 
 if __name__ == "__main__":
     c = 1420
     track_name = 'Track01'
-    datarate = 72411
+    path2hyscanbin = '/home/sirius/hyscan/bin'
+    path2hyscanprj = '/home/sirius/Hyscan5_projects'
+    project_name = 'echo2'
+    file4params = path2hyscanprj + '/' + project_name + '/' + track_name + '/' + 'track.prm'
+    try:
+        datarate   = read_datarate(file4params)
+    except Exception as err:
+        raise err
 
-    wrapper = gg.Hyscan5wrapper('/home/white-out/hyscan/bin', 'file:///home/white-out/Hyscan5_projects', 'echo2')
-
-    data = wrapper.get_aqoustic_data(track_name, 102)
-        # Преобразование изображения (полосок изображения в картинку) а - количество строк, st - это коэффициент
-    img0 = np.asarray(data)
-    V = 2
-    Ln = img0.shape[0]
-    Lm = 100
-    time0 = 2*Ln/c
-    st = Ln/Lm
-    img = img0[0:Ln-1, :]
-
-    a = Lm/time0*V
-    time = time0*a
-    d_points = Ln / a
-
-    scale = a / d_points / st
+    DB = gg.Hyscan5wrapper(path2hyscanbin, 'file://' + path2hyscanprj, project_name)
+    # Читаем информацию о галсе [id, начаьный индекс строк, конечный индекс строк]
+    track_port = DB.get_track_id(track_name, 101)
+    track_starboard = DB.get_track_id(track_name, 102)
+    # Считываем строки из БД
+    count_lines2read = 250
+    data_port = DB.read_lines(track_port[0], track_port[1], count_lines2read)
+    data_starboard = DB.read_lines(track_starboard[0], track_starboard[1], count_lines2read)
 
 
-
-    screen_width = 600
-    screen_height = round(screen_width * scale)
-    screen_height = 800
-    screen_width = round(screen_height / scale)
-    dim = (screen_width, screen_height)
-
-
-    converted = cv2.convertScaleAbs(src=img, alpha=2000, beta=100)
-    resized = cv2.resize(converted, dim, interpolation=cv2.INTER_AREA)
+    img = Capture.CalculateDim(data_port,2, 1420, 100, 500 )
+    cv2.imshow('PORT', img)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
 
 
-    plt.imshow(resized, interpolation='bicubic')
-    plt.show()
+
+
 
 
 
