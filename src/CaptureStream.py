@@ -5,6 +5,7 @@ import sqlite3
 from matplotlib import pyplot as plt
 import Capture
 
+
 def read_datarate(filename):
     filestring = open(filename, 'r').read()
     idx_beg = filestring.find('/data/rate=') + 11
@@ -41,6 +42,7 @@ if __name__ == "__main__":
     cv2.imshow('PORT', img)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
+
 
 
 
