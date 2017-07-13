@@ -1,6 +1,6 @@
 import cv2
 
-def CalculateDim(data, V, c, Lm, screen_height):
+def CalculateDim(data, V, c, Lm, screen_height, screen_width):
     # Lm - число строк
 
     Ln = data.shape[0]
@@ -10,8 +10,10 @@ def CalculateDim(data, V, c, Lm, screen_height):
     a = Lm / time0 * V
     d_points = Ln / a
 
-    screen_width = round(screen_height * st * d_points)
+    if screen_width == -1:
+        screen_width = round(screen_height * st * d_points)
+    elif screen_height == -1:
+        screen_height = round(screen_width / st / d_points)
     dim = (screen_width, screen_height)
-    data = cv2.resize(img, dim, interpolation=cv2.INTER_AREA)
-    return data
+    return dim
 

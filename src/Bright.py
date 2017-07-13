@@ -2,5 +2,5 @@ import cv2
 
 
 def convert_range(data):
-    dst=cv2.convertScaleAbs(src=data, alpha=5000, beta=10)
+    dst=cv2.convertScaleAbs(src=data, alpha=10000, beta=0)
     return dst

@@ -17,9 +17,13 @@ class Hyscan5wrapper():
         os.chdir(self.path2Hyscan5bin)
 
         # Загружаем DLL для чтения БД ГидроГраф
-        dllname_db = os.path.join(self.path2Hyscan5bin, 'libcpp_bd_wrap.so')
+        if os.name == 'nt':
+            suffix = 'dll'
+        else:
+            suffix = 'so'
+        dllname_db = os.path.join(self.path2Hyscan5bin, 'libcpp_bd_wrap.' + suffix)
         dllname_db = os.path.normpath(dllname_db)
-        dllname_ra = os.path.join(self.path2Hyscan5bin, 'libcpp_acoustic_wrap.so')
+        dllname_ra = os.path.join(self.path2Hyscan5bin, 'libcpp_acoustic_wrap.' + suffix)
         dllname_ra = os.path.normpath(dllname_ra)
         self.DB = ctypes.CDLL(dllname_db)
         self.RA = ctypes.CDLL(dllname_ra)
@@ -46,10 +50,10 @@ class Hyscan5wrapper():
 
     def read_lines(self, track_id, offset, count):
         lines = []
-        for i in range(offset + count - 1):
+        for i in range(0, count - 1):
             num_values = self.RA.get_values_count(track_id, i) #найти число точек в строке
             buffer_output = (c_float * num_values)() #резервируем место в памяти
-            num_values = self.RA.get_values(track_id, i, byref(buffer_output), num_values) #читаем строки из БД
+            num_values = self.RA.get_values(track_id, offset + i, byref(buffer_output), num_values) #читаем строки из БД
             lines.append(buffer_output)
         return np.asarray(lines)
 
