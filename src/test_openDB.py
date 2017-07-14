@@ -2,16 +2,16 @@ import gidroGraf_DBreader as gg
 import cv2
 import Bright
 import Capture
-
+import Binarize
 
 if __name__ == "__main__":
     # Задаем исходные данные
     c = 1420 #скорость звука
     v = 1    #скорость гидролокатора
-    path2hyscanbin = '/media/alf/Storage/hyscan-builder-linux/bin'
-    path2hyscanprj = '/media/alf/Storage/Hyscan5_projects'
+    path2hyscanbin = 'C:\\hyscan-builder\\bin'
+    path2hyscanprj = 'C:\\Hyscan5_projects'
     project_name   = 'line'
-    track_name     = 'Track01'
+    track_name     = 'Track02'
 
     # Созадем экземпляр класса gidroGraf_DBreader
     DB = gg.Hyscan5wrapper(path2hyscanbin, path2hyscanprj, project_name)
@@ -23,6 +23,7 @@ if __name__ == "__main__":
     # Читаем информацию о галсе [id, начаьный индекс строк, конечный индекс строк]
     track_port      = DB.get_track_id(track_name, 101)
     track_starboard = DB.get_track_id(track_name, 102)
+
 
     # Считываем строки из БД
     count_lines2read = 1000
@@ -39,9 +40,15 @@ if __name__ == "__main__":
     # clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
     # processed = clahe.apply(converted)
 
+    data_port2 = data_port
+
+    #бинаризация данных
+    data_port = Binarize.Bin(data_port)
+
     # Отображение картинок
-    cv2.imshow('PORT',      data_port)
-    cv2.imshow('STARBOARD', data_starboard)
+    cv2.imshow('ORIGINAL PORT', data_port2)
+    cv2.imshow('PORT',          data_port)
+    cv2.imshow('STARBOARD',     data_starboard)
 
     cv2.waitKey(0)
     cv2.destroyAllWindows()

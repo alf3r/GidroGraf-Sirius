@@ -17,9 +17,9 @@ class Hyscan5wrapper():
         os.chdir(self.path2Hyscan5bin)
 
         # Загружаем DLL для чтения БД ГидроГраф
-        dllname_db = os.path.join(self.path2Hyscan5bin, 'libcpp_bd_wrap.so')
+        dllname_db = os.path.join(self.path2Hyscan5bin, 'libcpp_bd_wrap.dll')
         dllname_db = os.path.normpath(dllname_db)
-        dllname_ra = os.path.join(self.path2Hyscan5bin, 'libcpp_acoustic_wrap.so')
+        dllname_ra = os.path.join(self.path2Hyscan5bin, 'libcpp_acoustic_wrap.dll')
         dllname_ra = os.path.normpath(dllname_ra)
         self.DB = ctypes.CDLL(dllname_db)
         self.RA = ctypes.CDLL(dllname_ra)
