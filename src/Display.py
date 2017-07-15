@@ -7,7 +7,7 @@ def display(data_port, data_starboard, img_name, time2show):
     data_port = cv2.flip(data_port, 1)
     img = np.concatenate((data_port, data_starboard), axis=1)
 
-    plt.imshow(img, cmap='bone', interpolation='bicubic')
+    plt.imshow(img, cmap='hsv', interpolation='bicubic')
     # fig, ax = plt.subplots()
     # ax.imshow(img, cmap='bone', interpolation='bicubic')
     # ax.grid(True)
