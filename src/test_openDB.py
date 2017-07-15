@@ -2,8 +2,8 @@ import gidroGraf_DBreader as gg
 import cv2
 import Bright
 import Capture
-import time
-import  numpy as np
+import numpy as np
+import Display
 
 
 if __name__ == "__main__":
@@ -23,7 +23,7 @@ if __name__ == "__main__":
         raise err
 
     # Читаем информацию о галсе [id, начаьный индекс строк, конечный индекс строк]
-    track_port      = DB.get_track_id(track_name, 101)
+    track_port = DB.get_track_id(track_name, 101)
     track_starboard = DB.get_track_id(track_name, 102)
 
     # Считываем строки из БД
@@ -38,10 +38,11 @@ if __name__ == "__main__":
         data_port       = DB.read_lines(track_port[0],      track_port[1] + round(count_lines2read*i/step), count_lines2read)
         data_starboard  = DB.read_lines(track_starboard[0], track_starboard[1] + round(count_lines2read*i/step), count_lines2read)
 
-        dim = Capture.CalculateDim(data_port, 2, 1420, count_lines2read, 800, -1)
+    data_port      = Capture.CalculateDim(data_port, 5, 1500, -1, 640, datarate)
+    data_starboard = Capture.CalculateDim(data_starboard, 5, 1500, -1, 640, datarate)
 
-        data_port       = Bright.convert_range(data_port)
-        data_starboard  = Bright.convert_range(data_starboard)
+    Display.display(data_port, data_starboard, project_name + ' - ' + track_name)
+    # # Адаптивное выравнивание яркости и контраста
 
         data_port      = cv2.resize(data_port,      dim, interpolation=cv2.INTER_AREA)
         data_starboard = cv2.resize(data_starboard, dim, interpolation=cv2.INTER_AREA)
