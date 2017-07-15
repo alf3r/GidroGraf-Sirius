@@ -26,6 +26,7 @@ if __name__ == "__main__":
     track_port      = DB.get_track_id(track_name, 101)
     track_starboard = DB.get_track_id(track_name, 102)
 
+
     # Считываем строки из БД
     count_totalLines = track_port[2] - track_port[1]
     count_lines2read = count_totalLines
