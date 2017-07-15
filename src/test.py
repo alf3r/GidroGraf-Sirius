@@ -1,34 +1,25 @@
-import math
-import numpy
 
+import matplotlib.pyplot as plt
+import numpy as np
 
-class class_sinus:
+t = np.arange(0.0, 2.0, 0.01)
+s = np.sin(2 * np.pi * t)
+fig, ax = plt.subplots()
+ax.plot(t, s)
+ax.grid(True)
 
-    result = 0
+ticklines = ax.get_xticklines() + ax.get_yticklines()
+gridlines = ax.get_xgridlines() + ax.get_ygridlines()
+ticklabels = ax.get_xticklabels() + ax.get_yticklabels()
 
-    def __init__(self, start_result):
-        self.result = start_result
+for line in ticklines:
+    line.set_linewidth(3)
 
-    def sinusx(self, x):
-        y = math.sin(x)
-        self.result = y
+for line in gridlines:
+    line.set_linestyle('-.')
 
-    def logarifm(self, x):
-        y = math.log(x, 10)
-        self.result = y
+for label in ticklabels:
+    label.set_color('r')
+    label.set_fontsize('medium')
 
-    def print_result(self):
-        print(self.result)
-
-
-
-A = class_sinus(-1)
-A.print_result()
-
-A.sinusx(0.5)
-A.print_result()
-
-
-A.logarifm(30)
-A.print_result()
-
+plt.show()
