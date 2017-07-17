@@ -38,8 +38,8 @@ class Hyscan5wrapper():
 
     def get_track_id(self, track_name, source_type):
         # track_name =  'Track01'
-        # source_type = 101 - для Port
-        # source_type = 102 - для Starboard
+        # source_type = 102 - для Port
+        # source_type = 101 - для Starboard
         is_raw = True
         trk = track_name.encode('ascii', 'replace')
         prj = self.Project_name.encode('ascii', 'replace')
@@ -57,11 +57,17 @@ class Hyscan5wrapper():
             lines.append(buffer_output)
         return np.asarray(lines)
 
-    def read_datarate(self, track_name):
+    def read_datarate(self, track_name, source_type):
         # filename = path2hyscanprj + '/' + project_name + '/' + track_name + '/' + 'track.prm'
+        if source_type == 101:
+            source_type = 'ss-starboard-raw'
+        elif source_type == 102:
+            source_type = 'ss-port-raw'
         filename = os.path.join(self.path2hyscanprj, self.Project_name, track_name, 'track.prm')
         filestring = open(filename, 'r').read()
-        idx_beg = filestring.find('/data/rate=') + 11
+        idx_section = filestring.find(source_type)
+
+        idx_beg = filestring[idx_section:].find('/data/rate=') + 11 + idx_section
         idx_end = filestring[idx_beg:idx_beg + 7].find('\n') + idx_beg
         if idx_beg == -1:
             raise Exception('Невозможно прочитать проект, не найдена частота дискретизации')

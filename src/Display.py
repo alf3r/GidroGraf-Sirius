@@ -3,11 +3,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def display(data_port, data_starboard, img_name, time2show):
-    data_port = cv2.flip(data_port, 1)
-    img = np.concatenate((data_port, data_starboard), axis=1)
+def display(data_starboard, data_port, img_name, time2show):
+    data_starboard = cv2.flip(data_starboard, 1)
+    img = np.concatenate((data_starboard, data_port), axis=1)
 
-    plt.imshow(img, cmap='hsv', interpolation='bicubic')
+    plt.imshow(img, cmap='plasma', interpolation='bicubic')
     # fig, ax = plt.subplots()
     # ax.imshow(img, cmap='bone', interpolation='bicubic')
     # ax.grid(True)

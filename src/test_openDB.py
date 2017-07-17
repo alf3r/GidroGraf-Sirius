@@ -4,12 +4,16 @@ import Bright
 import Capture
 import numpy as np
 import Display
+import Binarize
+import os
+import matplotlib.pyplot as plt
 
 
 if __name__ == "__main__":
     # Задаем исходные данные
     c = 1420 #скорость звука
     v = 5    #скорость гидролокатора
+    current_path   = os.getcwd()
     path2hyscanbin = r'/media/alf/Storage/hyscan-builder-linux/bin'
     path2hyscanprj = r'/media/alf/Storage/Hyscan5_projects'
     project_name   = 'echo2'
@@ -26,7 +30,6 @@ if __name__ == "__main__":
     track_port      = DB.get_track_id(track_name, 101)
     track_starboard = DB.get_track_id(track_name, 102)
 
-
     # Считываем строки из БД
     count_totalLines = track_port[2] - track_port[1]
     count_lines2read = count_totalLines
@@ -39,7 +42,7 @@ if __name__ == "__main__":
         data_port      = DB.read_lines(track_port[0],      track_port[1] + round(count_lines2read*i/step), count_lines2read)
         data_starboard = DB.read_lines(track_starboard[0], track_starboard[1] + round(count_lines2read*i/step), count_lines2read)
 
-        N = Capture.range2points(40, datarate, c)
+        N = Capture.range2points(30, datarate, c)
         M = 200
         data_port      = data_port[M:, N:]
         data_starboard = data_starboard[M:, N:]
@@ -47,8 +50,12 @@ if __name__ == "__main__":
         data_port      = Bright.convert_range(data_port)
         data_starboard = Bright.convert_range(data_starboard)
 
-        data_port      = Capture.CalculateDim(data_port,      v, c, 800, -1, datarate)
-        data_starboard = Capture.CalculateDim(data_starboard, v, c, 800, -1, datarate)
+        data_port      = Capture.CalculateDim(data_port,      v, c, 1600, -1, datarate)
+        data_starboard = Capture.CalculateDim(data_starboard, v, c, 1600, -1, datarate)
+
+        img = Display.display(data_port, data_starboard, project_name + '-' + track_name, 0)
+
+        img_processed = Binarize.Bin(img)
 
         if i == (count_reads - 1) * step:
             break
@@ -56,15 +63,13 @@ if __name__ == "__main__":
             Display.display(data_port, data_starboard, project_name + '-' + track_name, 10)
             i += 1
 
-    # # Адаптивное выравнивание яркости и контраста
-    # clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-    # processed = clahe.apply(converted)
+    im2, contours, hierarchy = cv2.findContours(img_processed, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
+    cv2.drawContours(img, contours, -1, (255, 0, 0), 20)
 
-    # ret, thresh = cv2.threshold(data_port, 127, 255, 0)
-    # im2, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    # cv2.drawContours(data_port, contours, -1, (0, 255, 0), 2)
-
-    Display.display(data_port, data_starboard, project_name + '-' + track_name, 0)
+    plt.imshow(img, cmap='plasma', interpolation='bicubic')
+    plt.show()
+    cv2.imwrite(current_path + '/' + 'test.png', img)
 
     cv2.destroyAllWindows()
 
