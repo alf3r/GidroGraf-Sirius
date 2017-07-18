@@ -82,13 +82,10 @@ class Sonar_data():
         cv2.drawContours(self.data, contours, -1, (255, 0, 0), 20)
 
     def convert_range(self):
-        # clahe = cv2.createCLAHE(clipLimit=2, tileGridSize=(8, 8))
-
-        alpha = 20000
+        alpha = 2000
         a = cv2.convertScaleAbs(self.data, alpha=alpha, beta=0)
         beta = 127 - np.median(a, [0, 1])
         a = cv2.convertScaleAbs(self.data, alpha=alpha, beta=beta)
-        # a = clahe.apply(a)
         self.data = a
         # a1 = np.median(a, 0)
         # plt.hist(a1, 256, range=[0, 255], fc='k', ec='k')
@@ -137,5 +134,6 @@ class Sonar_data():
         # plt.show()
 
     def extend_data(self, zeros_arr):
+        zeros_arr += zeros_arr + 30
         self.data = np.hstack((self.data, zeros_arr))
 

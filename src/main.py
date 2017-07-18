@@ -19,8 +19,8 @@ if __name__ == "__main__":
     current_path = os.getcwd()
     path2hyscanbin = r'/media/alf/Storage/hyscan-builder-linux/bin'
     path2hyscanprj = r'/media/alf/Storage/Hyscan5_projects'
-    project_name = 'echo2'
-    track_name = 'Track08'
+    project_name = 'line'
+    track_name = 'Track01'
 
     try:
         # ============================РАБОТА С БАЗОЙ ДАННЫХ=============================================================
@@ -84,15 +84,30 @@ if __name__ == "__main__":
         sonar_starboard.data = []
         zeros_arr = []
 
-        # Совершаем обработку PORT
-        a = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 127, 1)
-        a = cv2.blur(a, (7, 7))
+        # Совершаем обработку
+        clahe = cv2.createCLAHE(clipLimit=2, tileGridSize=(5, 5))
+        img = clahe.apply(img)
+        a1 = np.median(img, 0)
+        plt.hist(a1, 256, range=[0, 255], fc='k', ec='k')
+        plt.show()
+        a = cv2.blur(img, (15, 15))
+        # a = cv2.adaptiveThreshold(a, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 151, 1)
+        retval2, a = cv2.threshold(a, 150, 255, cv2.THRESH_BINARY)
 
         im2, contours, hierarchy = cv2.findContours(a, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
-        cv2.drawContours(img, contours, -1, (0, 255, 0), 10)
 
-        plt.imshow(img, cmap='bone', interpolation='bicubic', clim=(0, 255))
+        new_contours = []
+        for cnt in contours:
+            area = cv2.contourArea(cnt)
+            if (area < 1000) & (area > 100):
+                new_contours.append(cnt)
+
+        cv2.drawContours(img, new_contours, -1, (0, 255, 0), 2)
+
+        figure, axes = plt.subplots(1, 2, sharey=True)
+        axes[0].imshow(a, cmap='inferno', interpolation='bicubic', clim=(0, 255))
+        axes[1].imshow(img, interpolation='bicubic', clim=(0, 255))
         plt.show()
 
     except Exception as err:

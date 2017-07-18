@@ -9,6 +9,6 @@ def Bin(data):
 
     # retval2, thres = cv2.threshold(data,240,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
     # thres =cv2.adaptiveThreshold(data, 255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 0)
-    retval2, thres = cv2.threshold(data, 60,255,cv2.THRESH_BINARY)
+    retval2, thres = cv2.threshold(data, 120,127,cv2.THRESH_BINARY)
     # thres = cv2.blur(thres, (50, 50))
     return thres
