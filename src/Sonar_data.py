@@ -3,6 +3,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 import Capture
 
+class Sonar():
+
+    def set_port(self, port):
+        self.port = port
+
+    def set_starboard(self, starboard):
+        self.starboard = starboard
+
 
 class Sonar_data():
 
@@ -49,35 +57,57 @@ class Sonar_data():
         elif screen_height == -1:
             screen_height = round(screen_width * self.scale)
         image_dimention = (screen_width, screen_height)
-        return cv2.resize(self.data, image_dimention, interpolation=cv2.INTER_AREA)
+        self.data = cv2.resize(self.data, image_dimention, interpolation=cv2.INTER_AREA)
 
     def binarize(self):
         # Выделение линии дна = retval2, thres = cv2.threshold(data, 50,70,cv2.THRESH_BINARY) thres = cv2.blur(thres, (50, 50))
         # Выделение объектов  =
-        # retval2, thres = cv2.threshold(data,240,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-        # thres =cv2.adaptiveThreshold(data, 255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 0)
-        retval2, thres = cv2.threshold(self.data, 60, 80, cv2.THRESH_BINARY)
-        # thres = cv2.blur(thres, (50, 50))
-        self.data = thres
+        a = cv2.adaptiveThreshold(self.data, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 125, 1)
+
+        # a = cv2.adaptiveThreshold(a, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 55, 1)
+        # retval2, a = cv2.threshold(self.data, 90, 255, cv2.THRESH_BINARY)
+        # a1 = np.median(a, 0)
+        # plt.hist(a1, 256, range=[0, 255], fc='k', ec='k')
+        # plt.show()
+        self.data = a
+
+    def blur(self):
+        px = 5
+        self.data = cv2.blur(self.data, (px, px))
+        # self.data = cv2.medianBlur(self.data, px)
+
+    def find_contours(self):
+        im2, contours, hierarchy = cv2.findContours(self.data, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        self.data = cv2.cvtColor(self.data, cv2.COLOR_GRAY2RGB)
+        cv2.drawContours(self.data, contours, -1, (255, 0, 0), 20)
 
     def convert_range(self):
-        # clahe = cv2.createCLAHE(clipLimit=90, tileGridSize=(33, 33))
-        # a = self.data.view((np.uint8, 4))
-        # a = a[:, :, 3]
+        # clahe = cv2.createCLAHE(clipLimit=2, tileGridSize=(8, 8))
+
+        alpha = 20000
+        a = cv2.convertScaleAbs(self.data, alpha=alpha, beta=0)
+        beta = 127 - np.median(a, [0, 1])
+        a = cv2.convertScaleAbs(self.data, alpha=alpha, beta=beta)
         # a = clahe.apply(a)
-        # a = cv2.convertScaleAbs(self.data, alpha=35000, beta=-150)
-        # self.data = a
+        self.data = a
+        # a1 = np.median(a, 0)
+        # plt.hist(a1, 256, range=[0, 255], fc='k', ec='k')
+        # plt.show()
+
 
         # Коррекция яркости по диапазону
-        figure, axes = plt.subplots(1, 4, sharey=True)
-        for i in range(0, 4):
-            k = (i+0)*2000 + 30000
-            a = cv2.convertScaleAbs(self.data, alpha=k, beta=-120)
-            a1 = np.median(a, 0)
-            axes[i].hist(a1, 256, fc='k', ec='k')
-            axes[i].set_title('beta=' + str(k))
-        plt.show()
-        self.data = a
+        # figure, axes = plt.subplots(2, 4)
+        # for i in range(0, 4):
+        #     k = (i+2) * 5000
+        #     a = cv2.convertScaleAbs(self.data, alpha=k, beta=0)
+        #     beta = 127 - np.median(a, [0, 1])
+        #     a = cv2.convertScaleAbs(self.data, alpha=k, beta=beta)
+        #     a1 = np.median(a, 0)
+        #     axes[1, i].hist(a1, 256, range=[0, 255], fc='k', ec='k')
+        #     axes[1, i].set_title('alpha=' + str(k))
+        #     axes[0, i].imshow(a, cmap='bone', interpolation='bicubic', clim=(0, 254))
+        # plt.show()
+        # self.data = a
 
         # Исследование коррекции яркости Клахе
         # figure, axes = plt.subplots(1, 4, sharey=True)
@@ -105,4 +135,7 @@ class Sonar_data():
         #         iy = i
         # self.data = a[:, :, iy]
         # plt.show()
+
+    def extend_data(self, zeros_arr):
+        self.data = np.hstack((self.data, zeros_arr))
 

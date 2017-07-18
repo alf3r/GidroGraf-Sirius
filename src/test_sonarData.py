@@ -1,5 +1,7 @@
 import os
 import matplotlib.pyplot as plt
+import cv2
+import numpy as np
 
 from gidroGraf_DBreader import Hyscan5wrapper
 from Sonar_data import Sonar_data
@@ -8,7 +10,7 @@ from Sonar_data import Sonar_data
 if __name__ == "__main__":
     # Задаем исходные данные
     source_starboard = 101 # Правый борт
-    source_port = 102      # Левый борт
+    source_port      = 102 # Левый борт
 
     source = source_starboard
     c = 1500  # скорость звука
@@ -49,12 +51,24 @@ if __name__ == "__main__":
 
         # ============================ОБРАБОТКА ДАННЫХ==================================================================
         # Совершаем обработку
+        alpha = 20000
+        a = cv2.convertScaleAbs(self.data, alpha=alpha, beta=0)
+        beta = 127 - np.median(a, [0, 1])
+        a = cv2.convertScaleAbs(self.data, alpha=alpha, beta=beta)
+        # a = clahe.apply(a)
+        self.data = a
+
+
         sonar_data.convert_range() # Переводим данные в 8бит и корректируем яркость
-        # sonar_data.binarize()      # Переводим данные в 2бит
+        sonar_data.binarize()      # Переводим данные в 2бит
+        # sonar_data.blur()
         #
+        # Выделяем контуры
+        sonar_data.find_contours()
+
         img = sonar_data.get_image(1000, -1)
         #
-        plt.imshow(img, cmap='hot', interpolation='bicubic', clim=(0, 256))
+        plt.imshow(img, cmap='bone', interpolation='bicubic', clim=(0, 255))
         plt.show()
 
     except Exception as err:
