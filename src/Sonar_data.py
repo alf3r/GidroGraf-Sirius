@@ -82,56 +82,17 @@ class Sonar_data():
         cv2.drawContours(self.data, contours, -1, (255, 0, 0), 20)
 
     def convert_range(self):
-        alpha = 2000
-        a = cv2.convertScaleAbs(self.data, alpha=alpha, beta=0)
-        beta = 127 - np.median(a, [0, 1])
-        a = cv2.convertScaleAbs(self.data, alpha=alpha, beta=beta)
+        for i in range(1,30):
+            alpha = 1000*i
+            a = cv2.convertScaleAbs(self.data, alpha=alpha, beta=0)
+            beta = 127 - np.median(a, [0, 1])
+            a = cv2.convertScaleAbs(self.data, alpha=alpha, beta=beta)
+
+            condition = np.mod(a, 255) == 0
+            K = np.sum(condition) / a.size
+            if K > 0.1:
+                break
         self.data = a
-        # a1 = np.median(a, 0)
-        # plt.hist(a1, 256, range=[0, 255], fc='k', ec='k')
-        # plt.show()
-
-
-        # Коррекция яркости по диапазону
-        # figure, axes = plt.subplots(2, 4)
-        # for i in range(0, 4):
-        #     k = (i+2) * 5000
-        #     a = cv2.convertScaleAbs(self.data, alpha=k, beta=0)
-        #     beta = 127 - np.median(a, [0, 1])
-        #     a = cv2.convertScaleAbs(self.data, alpha=k, beta=beta)
-        #     a1 = np.median(a, 0)
-        #     axes[1, i].hist(a1, 256, range=[0, 255], fc='k', ec='k')
-        #     axes[1, i].set_title('alpha=' + str(k))
-        #     axes[0, i].imshow(a, cmap='bone', interpolation='bicubic', clim=(0, 254))
-        # plt.show()
-        # self.data = a
-
-        # Исследование коррекции яркости Клахе
-        # figure, axes = plt.subplots(1, 4, sharey=True)
-        # for i in range(0, 4):
-        #     k = (i)*3 + 30
-        #     clahe = cv2.createCLAHE(clipLimit=90, tileGridSize=(33 , 33))
-        #     a1 = clahe.apply(a)
-        #     a1 = np.median(a1, 0)
-        #     axes[i].hist(a1, 256, range=(0.0, 1.0), fc='k', ec='k')
-        #     axes[i].set_title('clipLimit=' + str(k))
-        # plt.show()
-
-        # Исследование динамического диапазона
-        # figure, axes = plt.subplots(1, 4, sharey=True)
-        # ay = 0
-        # iy = 0
-        # for i in range(0,4):
-        #     a1 = a[:, :, i]
-        #     a1 = Capture.data2image(a1, self.scale, 1000, -1)
-        #     a1 = clahe.apply(a1)
-        #     axes[i].imshow(a1, cmap='bone', interpolation='bicubic')
-        #     ax = np.median(np.mean(a1, 0)) - 127
-        #     if abs(ax) > abs(ay):
-        #         ay = ax
-        #         iy = i
-        # self.data = a[:, :, iy]
-        # plt.show()
 
     def extend_data(self, zeros_arr):
         zeros_arr += zeros_arr + 30
