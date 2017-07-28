@@ -83,7 +83,7 @@ class Sonar_data():
 
     def convert_range(self):
         for i in range(1,30):
-            alpha = 1000*i
+            alpha = 1*i
             a = cv2.convertScaleAbs(self.data, alpha=alpha, beta=0)
             beta = 127 - np.median(a, [0, 1])
             a = cv2.convertScaleAbs(self.data, alpha=alpha, beta=beta)

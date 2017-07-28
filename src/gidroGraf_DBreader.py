@@ -50,12 +50,27 @@ class Hyscan5wrapper():
 
     def read_lines(self, track_id, offset, count):
         lines = []
+        max_num_values = 0
         for i in range(0, count - 1):
             num_values = self.RA.get_values_count(track_id, i) #найти число точек в строке
+            if num_values > max_num_values:
+                max_num_values = num_values
             buffer_output = (c_float * num_values)() #резервируем место в памяти
             num_values = self.RA.get_values(track_id, offset + i, byref(buffer_output), num_values) #читаем строки из БД
             lines.append(buffer_output)
-        return np.asarray(lines)
+        retval = np.zeros((count, max_num_values), dtype=np.uint16)
+        for i in range(count-1):
+            nparr = np.asarray(lines[i], dtype=np.float16)
+            nparr = np.multiply(nparr, 65535)
+            nparr = np.asarray(nparr, dtype=np.uint16)
+            a = np.resize(nparr, retval[i].shape)
+            retval[i] += a
+        return retval
+
+    #< gidroGraf_DBreader.c_float_Array_6252     object    at    0x7fcb40a2df28 >
+    #< gidroGraf_DBreader.c_float_Array_20837    object    at    0x7f142f2eef28 >
+
+
 
     def read_datarate(self, track_name, source_type):
         # filename = path2hyscanprj + '/' + project_name + '/' + track_name + '/' + 'track.prm'
@@ -66,10 +81,10 @@ class Hyscan5wrapper():
         filename = os.path.join(self.path2hyscanprj, self.Project_name, track_name, 'track.prm')
         filestring = open(filename, 'r').read()
         idx_section = filestring.find(source_type)
-
         idx_beg = filestring[idx_section:].find('/data/rate=') + 11 + idx_section
-        idx_end = filestring[idx_beg:idx_beg + 7].find('\n') + idx_beg
+        idx_end = filestring[idx_beg:].find('\n') + idx_beg
+
         if idx_beg == -1:
             raise Exception('Невозможно прочитать проект, не найдена частота дискретизации')
-        a = int(filestring[idx_beg:idx_end])
+        a = float(filestring[idx_beg:idx_end])
         return a

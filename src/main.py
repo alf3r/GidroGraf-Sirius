@@ -25,10 +25,10 @@ if __name__ == "__main__":
     v = 1     # скорость гидролокатора
     depth = 0 # глубина под гидролокатором
     current_path = os.getcwd()
-    path2hyscanbin = r'/media/alf/Storage/hyscan-builder-linux/bin'
-    path2hyscanprj = r'/media/alf/Storage/Hyscan5_projects'
-    project_name = 'echo2'
-    track_name = 'Track08'
+    path2hyscanbin = r'/home/dmitriev.a/0900/hyscan-builder-linux/bin'
+    path2hyscanprj = r'/home/dmitriev.a/dev/hsdb'
+    project_name = '2017'
+    track_name = '7'
 
     try:
         # ============================РАБОТА С БАЗОЙ ДАННЫХ=============================================================
@@ -69,6 +69,10 @@ if __name__ == "__main__":
         sonar_port.apply_left()
         data_port = []
         data_starboard = []
+
+
+        clahe1 = cv2.createCLAHE(clipLimit=2, tileGridSize=(30, 30))
+        sonar_port.data = clahe1.apply(sonar_port.data)
 
 
 
@@ -130,7 +134,7 @@ if __name__ == "__main__":
         cv2.drawContours(img, new_boxes,    -1, (255, 0, 0), 10)
 
         figure, axes = plt.subplots(1, 2, sharey=True)
-        axes[0].imshow(a, cmap='inferno', interpolation='bicubic', clim=(0, 255))
+        axes[0].imshow(a, interpolation='bicubic', clim=(0, 255))
         axes[1].imshow(img, interpolation='bicubic', clim=(0, 255))
         plt.show()
 
